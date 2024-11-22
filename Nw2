@@ -1,0 +1,48 @@
+import time
+from luma.core.interface.serial import i2c
+from luma.oled.device import ssd1306
+from PIL import Image, ImageDraw, ImageFont
+
+# Initialize the I2C interface and the SSD1306 OLED display
+serial = i2c(port=1, address=0x3C)
+device = ssd1306(serial, width=128, height=32)  # Adjust to height=64 if using a 128x64 display
+
+# Create fonts
+font_large = ImageFont.load_default()  # Scrolling text font
+font_small = ImageFont.load_default()  # Stationary text font
+
+# Texts
+scroll_text = "Scrolling Text: This is a horizontally scrolling message. "
+stationary_text = "Static: Info"
+
+# Calculate text dimensions
+scroll_text_width = font_large.getsize(scroll_text)[0]
+scroll_text_height = font_large.getsize(scroll_text)[1]
+
+# Initialize scrolling position
+x_position = device.width  # Start scrolling text off-screen to the right
+
+# Animation loop
+while True:
+    # Create a blank image for drawing
+    image = Image.new("1", (device.width, device.height))
+    draw = ImageDraw.Draw(image)
+
+    # Draw the stationary text
+    draw.text((0, 0), stationary_text, font=font_small, fill=255)  # Top-left corner
+
+    # Draw the scrolling text
+    draw.text((x_position, scroll_text_height), scroll_text, font=font_large, fill=255)
+
+    # Display the image
+    device.display(image)
+
+    # Update the x_position for scrolling
+    x_position -= 1
+
+    # Reset scrolling text to start again when it goes off-screen
+    if x_position < -scroll_text_width:
+        x_position = device.width
+
+    # Add a small delay for smooth scrolling
+    time.sleep(0.03)
