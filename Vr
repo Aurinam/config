@@ -1,0 +1,41 @@
+import time
+from luma.core.interface.serial import i2c
+from luma.oled.device import ssd1306
+from PIL import Image, ImageDraw, ImageFont
+
+# Initialize the I2C interface and the SSD1306 OLED display
+serial = i2c(port=1, address=0x3C)
+device = ssd1306(serial, width=128, height=32)  # Adjust to height=64 if using a 128x64 display
+
+# Create a font (use default or a TTF font)
+font = ImageFont.load_default()
+
+# Text to scroll
+scroll_text = "Vertical scrolling text animation on SSD1306 OLED display! "
+
+# Create an off-screen image for drawing
+text_width = font.getsize(scroll_text)[0]
+text_height = font.getsize(scroll_text)[1]
+image = Image.new("1", (device.width, text_height * 2))  # Double the height for vertical scroll
+draw = ImageDraw.Draw(image)
+
+# Draw the text onto the image twice for seamless scrolling
+draw.text((0, 0), scroll_text, font=font, fill=255)
+draw.text((0, text_height), scroll_text, font=font, fill=255)
+
+# Scroll the text vertically
+y_position = 0
+while True:
+    # Crop the image to the visible area and display it
+    cropped_image = image.crop((0, y_position, device.width, y_position + device.height))
+    device.display(cropped_image)
+
+    # Move the text position
+    y_position += 1
+
+    # Reset position when the text has scrolled completely off-screen
+    if y_position >= text_height:
+        y_position = 0
+
+    # Add a small delay for smooth scrolling
+    time.sleep(0.03)
