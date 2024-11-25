@@ -1,0 +1,84 @@
+import RPi.GPIO as GPIO
+import time
+
+# Define GPIO pins
+RS = 17
+E = 27
+D4 = 22
+D5 = 23
+D6 = 24
+D7 = 25
+
+# Set up the GPIO mode
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(RS, GPIO.OUT)
+GPIO.setup(E, GPIO.OUT)
+GPIO.setup(D4, GPIO.OUT)
+GPIO.setup(D5, GPIO.OUT)
+GPIO.setup(D6, GPIO.OUT)
+GPIO.setup(D7, GPIO.OUT)
+
+# Define a function to send a command to the LCD
+def send_command(cmd):
+    GPIO.output(RS, GPIO.LOW)
+    # Send high nibble
+    GPIO.output(D4, GPIO.HIGH if (cmd & 0x10) else GPIO.LOW)
+    GPIO.output(D5, GPIO.HIGH if (cmd & 0x20) else GPIO.LOW)
+    GPIO.output(D6, GPIO.HIGH if (cmd & 0x40) else GPIO.LOW)
+    GPIO.output(D7, GPIO.HIGH if (cmd & 0x80) else GPIO.LOW)
+    GPIO.output(E, GPIO.HIGH)
+    time.sleep(0.001)
+    GPIO.output(E, GPIO.LOW)
+    # Send low nibble
+    GPIO.output(D4, GPIO.HIGH if (cmd & 0x01) else GPIO.LOW)
+    GPIO.output(D5, GPIO.HIGH if (cmd & 0x02) else GPIO.LOW)
+    GPIO.output(D6, GPIO.HIGH if (cmd & 0x04) else GPIO.LOW)
+    GPIO.output(D7, GPIO.HIGH if (cmd & 0x08) else GPIO.LOW)
+    GPIO.output(E, GPIO.HIGH)
+    time.sleep(0.001)
+    GPIO.output(E, GPIO.LOW)
+    time.sleep(0.01)
+
+# Define a function to send data (characters) to the LCD
+def send_data(data):
+    GPIO.output(RS, GPIO.HIGH)
+    # Send high nibble
+    GPIO.output(D4, GPIO.HIGH if (data & 0x10) else GPIO.LOW)
+    GPIO.output(D5, GPIO.HIGH if (data & 0x20) else GPIO.LOW)
+    GPIO.output(D6, GPIO.HIGH if (data & 0x40) else GPIO.LOW)
+    GPIO.output(D7, GPIO.HIGH if (data & 0x80) else GPIO.LOW)
+    GPIO.output(E, GPIO.HIGH)
+    time.sleep(0.001)
+    GPIO.output(E, GPIO.LOW)
+    # Send low nibble
+    GPIO.output(D4, GPIO.HIGH if (data & 0x01) else GPIO.LOW)
+    GPIO.output(D5, GPIO.HIGH if (data & 0x02) else GPIO.LOW)
+    GPIO.output(D6, GPIO.HIGH if (data & 0x04) else GPIO.LOW)
+    GPIO.output(D7, GPIO.HIGH if (data & 0x08) else GPIO.LOW)
+    GPIO.output(E, GPIO.HIGH)
+    time.sleep(0.001)
+    GPIO.output(E, GPIO.LOW)
+    time.sleep(0.01)
+
+# Initialize the LCD
+def lcd_init():
+    time.sleep(0.05)
+    send_command(0x33)  # 4-bit mode initialization
+    send_command(0x32)  # Set to 4-bit mode
+    send_command(0x28)  # 2-line display, 5x8 font
+    send_command(0x0C)  # Display ON, Cursor OFF
+    send_command(0x06)  # Entry mode: Increment cursor
+    send_command(0x01)  # Clear display
+    time.sleep(0.02)
+
+# Display a message on the LCD
+def display_message(message):
+    for char in message:
+        send_data(ord(char))
+
+# Main program
+lcd_init()
+display_message("Hello, World!")
+
+# Cleanup
+GPIO.cleanup()
