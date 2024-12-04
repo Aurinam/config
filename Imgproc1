@@ -1,0 +1,138 @@
+Vero board 
+Potentiometer 
+Burg strip 
+
+Face recognition on a Raspberry Pi 4 can be achieved using libraries like OpenCV and face_recognition. Below is a step-by-step guide to set up and implement face recognition:
+
+1. Prerequisites
+
+• Hardware:
+
+• Raspberry Pi 4 with Raspbian OS (preferably Raspberry Pi OS Lite or Desktop)
+
+• A camera module or USB webcam
+
+• MicroSD card (16GB or larger)
+
+• Internet connection for the Pi
+
+• Software:
+
+• Python 3 installed on your Raspberry Pi
+
+• Libraries: OpenCV, face_recognition (based on dlib), and NumPy
+
+2. Install Required Libraries
+
+Run the following commands to install necessary packages:
+
+Update the system
+
+bash
+
+Copy code
+
+sudo apt update && sudo apt upgrade -y 
+
+Install dependencies
+
+bash
+
+Copy code
+
+sudo apt install -y python3 python3-pip python3-dev cmake libboost-all-dev libjpeg-dev libopenblas-dev liblapack-dev 
+
+Install OpenCV
+
+bash
+
+Copy code
+
+pip3 install opencv-python 
+
+Install dlib and face_recognition
+
+bash
+
+Copy code
+
+pip3 install dlib face_recognition 
+
+3. Connect the Camera
+
+• If you're using the Raspberry Pi Camera Module:
+
+• Enable the camera interface via raspi-config:
+
+bash
+
+Copy code
+
+sudo raspi-config 
+
+• Go to Interface Options > Camera and enable it.
+
+• Reboot the Raspberry Pi:
+
+bash
+
+Copy code
+
+sudo reboot 
+
+• Test the camera:
+
+bash
+
+Copy code
+
+raspistill -o test.jpg 
+
+4. Write the Face Recognition Code
+
+Here’s a sample Python script:
+
+face_recognition_pi.py
+
+python
+
+Copy code
+
+import cv2 import face_recognition # Initialize camera video_capture = cv2.VideoCapture(0) # 0 for default webcam # Load a sample picture and learn how to recognize it known_image = face_recognition.load_image_file("known_face.jpg") known_encoding = face_recognition.face_encodings(known_image)[0] # Create an array of known face encodings and their names known_face_encodings = [known_encoding] known_face_names = ["Your Name"] print("Starting face recognition...") while True: # Capture frame from the video feed ret, frame = video_capture.read() rgb_frame = frame[:, :, ::-1] # Convert BGR to RGB # Find all face locations and encodings in the frame face_locations = face_recognition.face_locations(rgb_frame) face_encodings = face_recognition.face_encodings(rgb_frame, face_locations) for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings): matches = face_recognition.compare_faces(known_face_encodings, face_encoding) name = "Unknown" if True in matches: first_match_index = matches.index(True) name = known_face_names[first_match_index] # Draw a rectangle around the face cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2) cv2.putText(frame, name, (left + 6, bottom - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1) # Display the resulting image cv2.imshow('Video', frame) # Quit with 'q' if cv2.waitKey(1) & 0xFF == ord('q'): break # Release the camera and close the window video_capture.release() cv2.destroyAllWindows() 
+
+5. Run the Code
+
+• Save the script as face_recognition_pi.py.
+
+• Place a reference image (known_face.jpg) in the same directory.
+
+• Run the script:
+
+bash
+
+Copy code
+
+python3 face_recognition_pi.py 
+
+6. Optimizations
+
+• Performance Tweaks:
+
+• Use a lightweight face detection model or resize video frames for better performance.
+
+• Ensure hardware acceleration (e.g., enabling OpenCV's cv2.dnn module).
+
+• Install SWAP memory: For memory-intensive tasks like dlib installation, increase the swap memory.
+
+7. Notes
+
+• The script identifies faces in real-time and labels them based on preloaded images.
+
+• If you're handling multiple faces, extend known_face_encodings and known_face_names.
+
+
+
+
+
+
+
