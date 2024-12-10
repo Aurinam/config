@@ -1,0 +1,20 @@
+import serial
+import time
+
+# Configure the serial connection (use /dev/serial0 for Raspberry Pi UART)
+ser = serial.Serial('/dev/serial0', baudrate=9600, timeout=1)  # Check baud rate in printer documentation
+
+# Check if the serial port is open
+if ser.isOpen():
+    print("Serial port is open.")
+else:
+    print("Failed to open serial port.")
+
+# Print a simple message to the thermal printer
+ser.write(b'Hello, Thermal Printer with TTL!\n\n')
+
+# Add a small delay to ensure transmission is complete
+time.sleep(1)
+
+# Close the serial port
+ser.close()
